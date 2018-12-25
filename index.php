@@ -56,7 +56,7 @@
 
     <?php 
         $cevap = false;
-        if (isset($_POST["soru"]) && isset($_POST["dili"])) {
+        if ($_POST) {
             $soru = $_POST["soru"];
             $dili = $_POST["dili"];
 
@@ -74,19 +74,44 @@
             foreach ($veriler as $veri) {
                 if ($veri["dili"] == $dili && $veri["soru"] == $soru) {
                     $cevap = $veri["cevap"];
+                    $message[]=[
+                        "soru"=>$soru,
+                        "dili"=>$dili,
+                        "cevap"=>$veri["cevap"]
+                    ];
+
+                    if(!$_COOKIE["check"]){
+                        setcookie("check",json_encode($message),time()+3600);
+
+                    }else{
+                        $oncekiMesajlar=json_decode($_COOKIE["check"]);
+                        $tumMesajlar=array_merge($oncekiMesajlar,$message);
+                        setcookie("check",json_encode($tumMesajlar),time()+3600);
+                    }
+
                 }
             }
+
+             header("location:index.php");
         }
     ?>
 
-    <?php if ($cevap) { ?>
-
-        <div class="alert alert-info" role="alert">
-            kullanıcı: <?php echo $soru; ?> <br>
-            bot: <?php echo $cevap; ?>
+    <?php 
+    if(@$_COOKIE["check"]){
+     $Mesajlar=json_decode($_COOKIE["check"]);
+    
+    foreach($Mesajlar as  $mesaj){
+        ?>
+      <div class="alert alert-info" role="alert">
+            kullanıcı: <?php echo $mesaj->soru; ?> <br>
+            bot: <?php echo $mesaj->cevap;  ?>
         </div>
+        <?php
+    } ?>
 
-    <?php } ?>
+  
+
+   <?php } ?>
 
     <div class="alert alert-success fixed-bottom" role="alert" style="margin-bottom: 0px;">
         Sohbet Robotu ver 1.0
